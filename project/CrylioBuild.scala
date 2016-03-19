@@ -14,44 +14,68 @@ object CrylioBuild extends Build {
   lazy val root = Project(
     id = "crylio",
     base = file("."),
-    aggregate = Seq(common, rest))
-      .configs(IntegrationTest, SmokeTest)
-      .settings(Defaults.itSettings: _*)
-      .settings(defaultSettings: _*)
-      .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
-      .settings(
-        parallelExecution := false,
-        libraryDependencies ++= testKit,
-        testOptions in Test := Seq(Tests.Filter(unitFilter)),
-        testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)),
-        testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter)))
-
-
+    aggregate = Seq(common, rest, app))
+    .configs(IntegrationTest, SmokeTest)
+    .settings(Defaults.itSettings: _*)
+    .settings(defaultSettings: _*)
+    .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
+    .settings(
+      parallelExecution := false,
+      libraryDependencies ++= testKit,
+      testOptions in Test := Seq(Tests.Filter(unitFilter)),
+      testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)),
+      testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter)))
+    .settings(
+      sourceDirectory in SmokeTest <<= sourceDirectory in Test,
+      sourceDirectory in IntegrationTest <<= sourceDirectory in Test//,
+      //run := {
+      //(run in worker in Compile).evaluated
+      //}
+    )
 
   lazy val rest = Project(
     id = "crylio-rest",
     base = file("rest"),
     dependencies = Seq(common % "compile->compile;test->test"))
-      .configs(IntegrationTest, SmokeTest)
-      .settings(Defaults.itSettings: _*)
-      .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
-      .settings(
-        testOptions in Test := Seq(Tests.Filter(unitFilter)),
-        testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)),
-        testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter))
-      )
+    .configs(IntegrationTest, SmokeTest)
+    .settings(Defaults.itSettings: _*)
+    .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
+    .settings(
+      testOptions in Test := Seq(Tests.Filter(unitFilter)),
+      testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)),
+      testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter))
+    )
+    .settings(
+      sourceDirectory in SmokeTest <<= sourceDirectory in Test,
+      sourceDirectory in IntegrationTest <<= sourceDirectory in Test)
 
   lazy val common = Project(
     id = "crylio-common",
     base = file("common"))
-      .configs(IntegrationTest, SmokeTest)
-      .settings(Defaults.itSettings: _*)
-      .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
-      .settings(
-        testOptions in Test := Seq(Tests.Filter(unitFilter)),
-        testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)),
-        testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter))
-      )
+    .configs(IntegrationTest, SmokeTest)
+    .settings(Defaults.itSettings: _*)
+    .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
+    .settings(
+      testOptions in Test := Seq(Tests.Filter(unitFilter)),
+      testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)),
+      testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter))
+    )
+
+  lazy val app = Project(
+    id = "crylio-app",
+    base = file("app"),
+    dependencies = Seq(common, rest % "compile->compile;test->test"))
+    .configs(IntegrationTest, SmokeTest)
+    .settings(Defaults.itSettings: _*)
+    .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
+    .settings(
+      testOptions in Test := Seq(Tests.Filter(unitFilter)),
+      testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)),
+      testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter))
+    )
+    .settings(
+      sourceDirectory in SmokeTest <<= sourceDirectory in Test,
+      sourceDirectory in IntegrationTest <<= sourceDirectory in Test)
 
   lazy val SmokeTest = config("smoke").extend(Test).copy()
 
@@ -80,14 +104,13 @@ object CrylioBuild extends Build {
     scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint"),
     javacOptions in Compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-Xlint:deprecation"),
     javacOptions in doc ++= Seq("-encoding", "UTF-8", "-target", "1.8"),
-    //javaOptions in (Compile,run) ++= Seq("-Xdebug", "-Xnoagent", "-Xrunjdwp:transport=dt_socket,address=13298,server=y,suspend=n"),
     shellPrompt := { state => ("[" + scala.Console.CYAN + "%s" + scala.Console.RESET + "] " + scala.Console.GREEN + "%s" + scala.Console.RESET + "$ ").format(Project.extract(state).currentProject.id, currBranch)},
     fork in run := true,
     crossVersion := CrossVersion.binary,
 
     retrieveManaged := true,
 
-    homepage := Some(url("http://distractify.com")),
+    homepage := Some(url("http://crylio.com")),
 
     parallelExecution in ThisBuild := false
   )
