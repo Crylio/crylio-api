@@ -1,8 +1,8 @@
 package crylio
 
 import crylio.Dependencies.testKit
-import sbt._
 import sbt.Keys._
+import sbt._
 
 object CrylioBuild extends Build {
   lazy val buildSettings = Seq(
@@ -27,11 +27,13 @@ object CrylioBuild extends Build {
       testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter)))
     .settings(
       sourceDirectory in SmokeTest <<= sourceDirectory in Test,
-      sourceDirectory in IntegrationTest <<= sourceDirectory in Test//,
-      //run := {
-      //(run in worker in Compile).evaluated
-      //}
+      sourceDirectory in IntegrationTest <<= sourceDirectory in Test)
+    .settings(
+      run := {
+        (run in app in Compile).evaluated
+      }
     )
+
 
   lazy val rest = Project(
     id = "crylio-rest",
@@ -104,7 +106,7 @@ object CrylioBuild extends Build {
     scalacOptions in Compile ++= Seq("-encoding", "UTF-8", "-target:jvm-1.8", "-feature", "-unchecked", "-Xlog-reflective-calls", "-Xlint"),
     javacOptions in Compile ++= Seq("-encoding", "UTF-8", "-source", "1.8", "-target", "1.8", "-Xlint:unchecked", "-Xlint:deprecation"),
     javacOptions in doc ++= Seq("-encoding", "UTF-8", "-target", "1.8"),
-    shellPrompt := { state => ("[" + scala.Console.CYAN + "%s" + scala.Console.RESET + "] " + scala.Console.GREEN + "%s" + scala.Console.RESET + "$ ").format(Project.extract(state).currentProject.id, currBranch)},
+    shellPrompt := { state => ("[" + scala.Console.CYAN + "%s" + scala.Console.RESET + "] " + scala.Console.GREEN + "%s" + scala.Console.RESET + "$ ").format(Project.extract(state).currentProject.id, currBranch) },
     fork in run := true,
     crossVersion := CrossVersion.binary,
 
