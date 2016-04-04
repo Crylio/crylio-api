@@ -3,7 +3,7 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <target>System.out</target>
         <encoder>
-            <pattern>%cyan(%-26(%date{dd.MM.yyyy}-%X{akkaTimestamp})) ${HOSTNAME} %highlight(%-5level) | %green((%logger{0}) - %msg%n</pattern>
+            <pattern>%cyan(%-26(%date{dd.MM.yyyy}-%X{akkaTimestamp})) ${HOSTNAME} %highlight(%-5level) | %green(%logger{0}) - %msg%n</pattern>
         </encoder>
     </appender>
     <appender name="FileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
@@ -23,4 +23,7 @@
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FileAppender"/>
     </root>
+
+    <logger name="reactivemongo" level="WARN" />
+    <logger name="akka://reactivemongo" level="WARN" />
 </configuration>

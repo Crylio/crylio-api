@@ -2,4 +2,4 @@ import crylio.{Dependencies, CrylioBuild}
 
 CrylioBuild.defaultSettings
 
-libraryDependencies ++= Dependencies.akka ++ Dependencies.config
+libraryDependencies ++= Dependencies.akka ++ Dependencies.config ++ Dependencies.jodaTime

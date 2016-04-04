@@ -1,6 +1,6 @@
-package crylio.akka
+package crylio.common.akka
 
-import akka.actor.{ActorLogging, Actor, ActorRef, Cancellable}
+import akka.actor.{Actor, ActorLogging, ActorRef, Cancellable}
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -45,4 +45,19 @@ trait BaseActor extends Actor with ActorLogging {
                message: Any): Cancellable =
     schedule(interval, interval, message)
 
+  def stop() = context.stop(self)
+
+  def actorPath = context.self.path.toStringWithoutAddress
+
+  override def aroundReceive(body: Receive, msg: Any): Unit = {
+    val logMessage = s"$actorPath received ${if (body.isDefinedAt(msg)) "" else "un"}handled message $msg"
+    if (body.isDefinedAt(msg)) log.debug(logMessage) else log.error(logMessage)
+    try {
+      super.aroundReceive(body, msg)
+    } catch {
+      case e: Throwable =>
+        log.error(e, s"$actorPath handling $msg throws $e")
+        throw e
+    }
+  }
 }

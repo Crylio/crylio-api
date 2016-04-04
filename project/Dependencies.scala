@@ -13,6 +13,9 @@ object Dependencies {
     val akkaKryoSerializationVersion = "0.3.3"
     val kryoSerializersVersion = "0.30"
     val sprayVersion = "1.3.3"
+    val reactivemongoVersion = "0.11.5"
+    val reactivemongoExtensions = "0.11.7.play24"
+
   }
 
   object Compile {
@@ -30,7 +33,8 @@ object Dependencies {
     val sprayRouting =   "io.spray" %% "spray-routing-shapeless2" % Versions.sprayVersion
     val sprayJson =      "io.spray" %% "spray-json" % "1.3.1"
     val sprayWebsocket = "com.wandoulabs.akka" %% "spray-websocket" % "0.1.4"
-
+    val reactiveMongo =           "org.reactivemongo" %% "reactivemongo" % Versions.reactivemongoVersion
+    val reactiveMongoExtensions = "org.reactivemongo" %% "reactivemongo-extensions-bson" % Versions.reactivemongoExtensions
   }
 
   object Test {
@@ -46,4 +50,6 @@ object Dependencies {
   lazy val akka = Seq(Compile.akka, Compile.akkaCluster, Compile.akkaContrib, Compile.kryoSerialization, Compile.kryoSerializers, Compile.akkaSlf4j, Compile.logback)
 
   lazy val spray = Seq(Compile.sprayCan, Compile.sprayRouting, Compile.sprayJson, Compile.sprayWebsocket)
+
+  lazy val db = Seq(Compile.reactiveMongo, Compile.reactiveMongoExtensions)
 }

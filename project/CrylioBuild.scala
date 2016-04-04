@@ -14,7 +14,7 @@ object CrylioBuild extends Build {
   lazy val root = Project(
     id = "crylio",
     base = file("."),
-    aggregate = Seq(common, rest, app))
+    aggregate = Seq(common, rest, app, data))
     .configs(IntegrationTest, SmokeTest)
     .settings(Defaults.itSettings: _*)
     .settings(defaultSettings: _*)
@@ -38,7 +38,7 @@ object CrylioBuild extends Build {
   lazy val rest = Project(
     id = "crylio-rest",
     base = file("rest"),
-    dependencies = Seq(common % "compile->compile;test->test"))
+    dependencies = Seq(data, common % "compile->compile;test->test"))
     .configs(IntegrationTest, SmokeTest)
     .settings(Defaults.itSettings: _*)
     .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
@@ -53,7 +53,21 @@ object CrylioBuild extends Build {
 
   lazy val common = Project(
     id = "crylio-common",
-    base = file("common"))
+    base = file("common"),
+    dependencies = Seq())
+    .configs(IntegrationTest, SmokeTest)
+    .settings(Defaults.itSettings: _*)
+    .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
+    .settings(
+      testOptions in Test := Seq(Tests.Filter(unitFilter)),
+      testOptions in IntegrationTest := Seq(Tests.Filter(itFilter)),
+      testOptions in SmokeTest := Seq(Tests.Filter(smokeFilter))
+    )
+
+  lazy val data = Project(
+    id = "crylio-data",
+    base = file("data"),
+    dependencies = Seq(common))
     .configs(IntegrationTest, SmokeTest)
     .settings(Defaults.itSettings: _*)
     .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)
@@ -66,7 +80,7 @@ object CrylioBuild extends Build {
   lazy val app = Project(
     id = "crylio-app",
     base = file("app"),
-    dependencies = Seq(common, rest % "compile->compile;test->test"))
+    dependencies = Seq(common, rest, data % "compile->compile;test->test"))
     .configs(IntegrationTest, SmokeTest)
     .settings(Defaults.itSettings: _*)
     .settings(inConfig(SmokeTest)(Defaults.testSettings): _*)

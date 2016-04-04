@@ -1,16 +1,23 @@
 package crylio.rest
 
-import crylio.akka.BaseActor
+import akka.util.Timeout
+import crylio.common.akka.BaseActor
 import crylio.rest.Errors.RestException
 import crylio.rest.Rejections.TooManyRequestsRejection
+import crylio.rest.routes.UserRoutes
 import spray.http.StatusCodes._
 import spray.routing.{ExceptionHandler, HttpService, RejectionHandler}
 
 import scala.concurrent._
 
-class RestService extends BaseActor with HttpService {
- 
+class RestService extends BaseActor with HttpService
+with UserRoutes {
+
   def actorRefFactory = context
+
+  val settings = RestSettings(context.system)
+
+  implicit val timeout: Timeout = Timeout(settings.defaultTimeout)
 
   def receive = runRoute(route)
 
@@ -33,19 +40,20 @@ class RestService extends BaseActor with HttpService {
   implicit def exceptionHandler: ExceptionHandler = ExceptionHandler {
     case e: RestException =>
       log.error(e, "RestException")
-      // _.complete(e.statusCode -> ResponseMessageDTO.failed(e.code, e.message))
-      _.complete("f")
-    //TODO: Add ResponseMessageDTO
+       _.complete(e.result.status -> exceptionMessage(e))
     case e: TimeoutException =>
       log.error(e, "TimeoutException")
-      _.complete(RequestTimeout)
+      _.complete(RequestTimeout -> exceptionMessage(e))
     case e: IllegalArgumentException =>
       log.error(e, "IllegalArgumentException")
-      _.complete(BadRequest -> e.getMessage)
+      _.complete(BadRequest -> exceptionMessage(e))
     case e: Throwable =>
       log.error(e, "Throwable")
-      _.complete(InternalServerError)
+      _.complete(InternalServerError -> exceptionMessage(e))
   }
+
+  def exceptionMessage(e: Throwable) = if (settings.showExceptions) e.getMessage else ""
+
 
   def noopRoute =
     path("noop") {
@@ -53,6 +61,6 @@ class RestService extends BaseActor with HttpService {
     }
 
   def versionRoute01 = pathPrefix("0.1") {
-    noopRoute
+    noopRoute ~ user01routes
   }
 }
